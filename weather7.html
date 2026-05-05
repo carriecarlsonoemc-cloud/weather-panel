@@ -108,54 +108,56 @@
 </div>
 
 <script>
-async function loadWeather() {
+<async function> loadWeather() {
   try {
     const pointResp = await fetch("https://api.weather.gov/points/41.78,-87.76");
     const pointData = await pointResp.json();
-
+ @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
     const stationsUrl = pointData.properties.observationStations;
     const stationsResp = await fetch(stationsUrl);
     const stationsData = await stationsResp.json();
     const station = stationsData.features[0].properties.stationIdentifier;
-
+ @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
     const obsUrl = `https://api.weather.gov/stations/${station}/observations/latest`;
     const obsResp = await fetch(obsUrl);
     const obsData = await obsResp.json();
     const p = obsData.properties;
-
+ @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
     document.getElementById("condition").innerText = p.textDescription || "N/A";
-
+ @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
     const tempC = p.temperature.value;
     const tempF = tempC !== null ? (tempC * 9/5 + 32).toFixed(0) + "°F" : "N/A";
     document.getElementById("tempF").innerText = tempF;
-
+ @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
     document.getElementById("humidity").innerText =
       p.relativeHumidity.value !== null ? p.relativeHumidity.value.toFixed(0) + "%" : "N/A";
-
+ @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
     document.getElementById("wind").innerText =
       p.windSpeed.value !== null ? p.windSpeed.value.toFixed(0) + " m/s" : "N/A";
-
+ @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
     document.getElementById("dewpoint").innerText =
       p.dewpoint.value !== null ? (p.dewpoint.value * 9/5 + 32).toFixed(0) + "°F" : "N/A";
-
+ @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
     document.getElementById("visibility").innerText =
       p.visibility.value !== null ? (p.visibility.value / 1609).toFixed(1) + " mi" : "N/A";
-
+ @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
     document.getElementById("updated").innerText =
       new Date(p.timestamp).toLocaleString();
-
+ @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
     const iconUrl = p.icon || "";
     document.getElementById("wx-icon").src = iconUrl.replace("http://", "https://");
-
+ @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
   } catch (e) {
     console.error(e);
     document.getElementById("condition").innerText = "Error loading weather";
   }
 }
-
 loadWeather();
 setInterval(loadWeather, 300000);
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
