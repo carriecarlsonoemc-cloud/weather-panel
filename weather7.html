@@ -118,20 +118,20 @@
   async function loadWeather() {
     try {
       // Step 1: Get point metadata
-      const pointResp = await fetch("https://api.weather.gov/points/41.78,-87.76");
+      const pointResp = await fetch(https://api.weather.gov/points/41.78,-87.76);
       const pointData = await pointResp.json();
 
       // Step 2: Get observation stations
       const stationsUrl = pointData.properties.observationStations;
-      const stationsResp = await fetch(stationsUrl);
+      const stationsResp = await fetch(https://api.weather.gov/gridpoints/LOT/82,73/stations);
       const stationsData = await stationsResp.json();
 
       // Step 3: Use nearest station
-      const station = stationsData.features[0].properties.stationIdentifier;
+      const station = stationsData.features[0].properties.KMDW;
 
       // Step 4: Get latest observation
-      const obsUrl = `https://api.weather.gov/stations/${station}/observations/latest`;
-      const obsResp = await fetch(obsUrl);
+      const obsUrl = https://api.weather.gov/stations/${station}/observations/latest;
+      const obsResp = await fetch(https://api.weather.gov/stations/KMDW/observations/latest);
       const obsData = await obsResp.json();
 
       const p = obsData.properties;
@@ -149,7 +149,7 @@
 
       // Fix icon
       const iconUrl = p.icon || "";
-      const safeIcon = iconUrl.replace("http://", "https://");
+      const safeIcon = iconUrl.replace("https://");
 
       // Populate panel
       document.getElementById("wx-icon").src = safeIcon;
