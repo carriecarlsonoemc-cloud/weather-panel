@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NWS Current Conditions Panel</title>
+
+<style>
+  #nws-panel {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: Arial, sans-serif;
+    background: #fff;
+    padding: 0;
+    width: 420px;
+  }
+
+  .nws-header {
+    background: #f5f5f5;
+    padding: 10px 12px;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .nws-header h2 {
+    margin: 2px 0 4px 0;
+    font-size: 1.1rem;
+  }
+
+  .coords {
+    font-size: 0.8rem;
+    color: #444;
+  }
+
+  .nws-body {
+    display: flex;
+    padding: 12px;
+    gap: 20px;
+  }
+
+  .nws-summary {
+    text-align: center;
+    width: 140px;
+  }
+
+  #wx-icon {
+    width: 75px;
+    height: 75px;
+  }
+
+  .cond {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 4px;
+  }
+
+  .tempF {
+    font-size: 2rem;
+    margin: 4px 0;
+  }
+
+  .tempC {
+    font-size: 1rem;
+    color: #666;
+  }
+
+  .nws-details table {
+    font-size: 0.9rem;
+  }
+
+  .nws-details td {
+    padding: 2px 6px;
+  }
+
+  .label {
+    text-align: right;
+    white-space: nowrap;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="nws-panel">
+  <div class="nws-header">
+    <b>Current conditions at</b>
+    <h2>Chicago Midway Airport (KMDW)</h2>
+    <span class="coords"><b>Lat:</b> 41.78°N <b>Lon:</b> 87.76°W <b>Elev:</b> 617 ft.</span>
+  </div>
+
+  <div class="nws-body">
+    <div class="nws-summary">
+      <img id="wx-icon" src="" alt="Weather Icon">
+      <p id="condition" class="cond"></p>
+      <p id="tempF" class="tempF"></p>
+      <p id="tempC" class="tempC"></p>
+    </div>
+
+    <div class="nws-details">
+      <table>
+        <tr><td class="label"><b>Humidity</b></td><td id="humidity"></td></tr>
+        <tr><td class="label"><b>Wind Speed</b></td><td id="wind"></td></tr>
+        <tr><td class="label"><b>Barometer</b></td><td id="barometer"></td></tr>
+        <tr><td class="label"><b>Dewpoint</b></td><td id="dewpoint"></td></tr>
+        <tr><td class="label"><b>Visibility</b></td><td id="visibility"></td></tr>
+        <tr><td class="label"><b>Last update</b></td><td id="updated"></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadWeather() {
+  try {
+    const pointResp = await fetch("https://api.weather.gov/points/41.78,-87.76");
+    const pointData = await pointResp.json();
+
+    const stationsUrl = pointData.properties.observationStations;
+    const stationsResp = await fetch(stationsUrl);
+    const stationsData = await stationsResp.json();
+    const station = stationsData.features[0].properties.stationIdentifier;
+
+    const obsUrl = `https://api.weather.gov/stations/${station}/observations/latest`;
+    const obsResp = await fetch(obsUrl);
+    const obsData = await obsResp.json();
+    const p = obsData.properties;
+
+    document.getElementById("condition").innerText = p.textDescription || "N/A";
+
+    const tempC = p.temperature.value;
+    const tempF = tempC !== null ? (tempC * 9/5 + 32).toFixed(0) + "°F" : "N/A";
+    document.getElementById("tempF").innerText = tempF;
+
+    document.getElementById("humidity").innerText =
+      p.relativeHumidity.value !== null ? p.relativeHumidity.value.toFixed(0) + "%" : "N/A";
+
+    document.getElementById("wind").innerText =
+      p.windSpeed.value !== null ? p.windSpeed.value.toFixed(0) + " m/s" : "N/A";
+
+    document.getElementById("dewpoint").innerText =
+      p.dewpoint.value !== null ? (p.dewpoint.value * 9/5 + 32).toFixed(0) + "°F" : "N/A";
+
+    document.getElementById("visibility").innerText =
+      p.visibility.value !== null ? (p.visibility.value / 1609).toFixed(1) + " mi" : "N/A";
+
+    document.getElementById("updated").innerText =
+      new Date(p.timestamp).toLocaleString();
+
+    const iconUrl = p.icon || "";
+    document.getElementById("wx-icon").src = iconUrl.replace("http://", "https://");
+
+  } catch (e) {
+    console.error(e);
+    document.getElementById("condition").innerText = "Error loading weather";
+  }
+}
+
+loadWeather();
+setInterval(loadWeather, 300000);
+</script>
+
+</body>
+</html>
