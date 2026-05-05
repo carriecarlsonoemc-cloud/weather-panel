@@ -5,13 +5,20 @@
 <title>NWS Current Conditions Panel</title>
 
 <style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #f0f0f0;
+  }
+
   #nws-panel {
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-family: Arial, sans-serif;
     background: #fff;
-    padding: 0;
     width: 420px;
+    padding: 0;
+    margin: auto;
   }
 
   .nws-header {
@@ -108,56 +115,63 @@
 </div>
 
 <script>
-<async function> loadWeather() {
-  try {
-    const pointResp = await fetch("https://api.weather.gov/points/41.78,-87.76");
-    const pointData = await pointResp.json();
- @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
-    const stationsUrl = pointData.properties.observationStations;
-    const stationsResp = await fetch(stationsUrl);
-    const stationsData = await stationsResp.json();
-    const station = stationsData.features[0].properties.stationIdentifier;
- @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
-    const obsUrl = `https://api.weather.gov/stations/${station}/observations/latest`;
-    const obsResp = await fetch(obsUrl);
-    const obsData = await obsResp.json();
-    const p = obsData.properties;
- @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
-    document.getElementById("condition").innerText = p.textDescription || "N/A";
- @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
-    const tempC = p.temperature.value;
-    const tempF = tempC !== null ? (tempC * 9/5 + 32).toFixed(0) + "°F" : "N/A";
-    document.getElementById("tempF").innerText = tempF;
- @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
-    document.getElementById("humidity").innerText =
-      p.relativeHumidity.value !== null ? p.relativeHumidity.value.toFixed(0) + "%" : "N/A";
- @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
-    document.getElementById("wind").innerText =
-      p.windSpeed.value !== null ? p.windSpeed.value.toFixed(0) + " m/s" : "N/A";
- @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
-    document.getElementById("dewpoint").innerText =
-      p.dewpoint.value !== null ? (p.dewpoint.value * 9/5 + 32).toFixed(0) + "°F" : "N/A";
- @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
-    document.getElementById("visibility").innerText =
-      p.visibility.value !== null ? (p.visibility.value / 1609).toFixed(1) + " mi" : "N/A";
- @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
-    document.getElementById("updated").innerText =
-      new Date(p.timestamp).toLocaleString();
- @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
-    const iconUrl = p.icon || "";
-    document.getElementById("wx-icon").src = iconUrl.replace("http://", "https://");
- @@ -152,10 +152,12 @@ <h2>Chicago Midway Airport (KMDW)</h2>
-  } catch (e) {
-    console.error(e);
-    document.getElementById("condition").innerText = "Error loading weather";
-  }
-}
-loadWeather();
-setInterval(loadWeather, 300000);
-</script>
+  async function loadWeather() {
+    try {
+      // Step 1: Get point metadata
+      const pointResp = await fetch("https://api.weather.gov/points/41.78,-87.76");
+      const pointData = await pointResp.json();
 
-</body>
-</html>
+      // Step 2: Get observation stations
+      const stationsUrl = pointData.properties.observationStations;
+      const stationsResp = await fetch(stationsUrl);
+      const stationsData = await stationsResp.json();
+
+      // Step 3: Use nearest station
+      const station = stationsData.features[0].properties.stationIdentifier;
+
+      // Step 4: Get latest observation
+      const obsUrl = `https://api.weather.gov/stations/${station}/observations/latest`;
+      const obsResp = await fetch(obsUrl);
+      const obsData = await obsResp.json();
+
+      const p = obsData.properties;
+
+      // Extract values
+      const condition = p.textDescription || "N/A";
+      const tempCraw = p.temperature.value;
+      const tempF = tempCraw !== null ? (tempCraw * 9/5 + 32).toFixed(0) : "N/A";
+      const tempC = tempCraw !== null ? tempCraw.toFixed(0) : "N/A";
+      const humidity = p.relativeHumidity.value !== null ? p.relativeHumidity.value.toFixed(0) + "%" : "N/A";
+      const wind = p.windSpeed.value !== null ? p.windSpeed.value.toFixed(0) + " m/s" : "N/A";
+      const barometer = p.barometricPressure.value !== null ? (p.barometricPressure.value / 3386).toFixed(2) + " in" : "N/A";
+      const dew = p.dewpoint.value !== null ? (p.dewpoint.value * 9/5 + 32).toFixed(0) + "°F" : "N/A";
+      const vis = p.visibility.value !== null ? (p.visibility.value / 1609).toFixed(1) + " mi" : "N/A";
+
+      // Fix icon
+      const iconUrl = p.icon || "";
+      const safeIcon = iconUrl.replace("http://", "https://");
+
+      // Populate panel
+      document.getElementById("wx-icon").src = safeIcon;
+      document.getElementById("condition").innerText = condition;
+      document.getElementById("tempF").innerText = tempF + "°F";
+      document.getElementById("tempC").innerText = tempC + "°C";
+      document.getElementById("humidity").innerText = humidity;
+      document.getElementById("wind").innerText = wind;
+      document.getElementById("barometer").innerText = barometer;
+      document.getElementById("dewpoint").innerText = dew;
+      document.getElementById("visibility").innerText = vis;
+      document.getElementById("updated").innerText = new Date(p.timestamp).toLocaleString();
+
+    } catch (e) {
+      console.error(e);
+      document.getElementById("condition").innerText = "Error loading weather";
+    }
+  }
+
+  loadWeather();
+  setInterval(loadWeather, 300000); // Refresh every 5 minutes
+</script>
 
 </body>
 </html>
